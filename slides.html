@@ -1,0 +1,800 @@
+	<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Nix - the purely functional package manager</title>
+
+		<meta name="description" content="While the world of programming is exploring different paradigms, package management is still ruled by a narrow few. Declarative configuration management gained some traction, by trying to abstract this legacy, but the amount of state might feel overwhelming. Nix package manager alleviates these issues by providing a functional, solid core for further tasks, such as configuration management, network deployment or dynamic resource deployment. I'd like to present how this approach helps in topics such as determinism, rollbacks, dependency hell, atomicity and isolation.">
+		<meta name="author" content="Mariusz `shd` Gliwiński">
+
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/white.css" id="theme">
+
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+				<section>
+					<h1 class="cover-heading">Nix</h1>
+					<h2>the purely functional package manager</h2>
+					<img class="plain" src="images/logo.png" style="width:300px">
+					<h3>Mariusz Gliwiński &lt;shd@nawia.net&gt;</h3>
+					<aside class="notes">
+					</aside>
+				</section>
+
+				<section>
+					<section>
+						<h2 class="slide-heading">Imperative vs Purely Functional</h2>
+						<div class="fragment" data-fragment-index="1">
+							<h3>Imperative</h3>
+							[] --[]+A--> [A] --[A]+B--> [A,B] --[A,B]-B--> [A]
+						</div>
+						<div class="fragment" data-fragment-index="2">
+							<h3>Functional</h3>
+							[] --[]+A--> [A] --[]+A+B--> [A,B] --[A,B]-B--> [A]
+						</div>
+						<h4 class="fragment" data-fragment-index="3">Occam's advice: why delete?</h4>
+					</section>
+					<section>
+						<h2 class="slide-heading">Imperative vs Purely Functional</h2>
+						<h4>Yeah, right... Clutter? Disk space? Build times?</h4>
+						<div class="fragment" data-fragment-index="1">
+							[][] --[]+A--> [A][A] --[A][]+B--> [A,B][] --[A,B][]+A--> [A,B][A]
+						</div>
+						<h4 class="fragment" data-fragment-index="2">Disk space?</h4>
+						<div class="fragment" data-fragment-index="3">
+							GC([A,B][A]) --> [A][A]
+						</div>
+					</section>
+					<aside class="notes">
+					</aside>
+				</section>
+
+				<section>
+					<h2 class="slide-heading">Atomic</h2>
+					<div class="fragment" data-fragment-index="1">[] --[]+A--> [A] --[A]+B--> [A,B] --[A,B]-B--> [A]</div>
+					<div class="fragment" data-fragment-index="2">is it? ideally yes...</div>
+					<div class="fragment" data-fragment-index="3">[] --[]+A--> [A] --[A]+B(problem)--> where am i?</div>
+					<div class="fragment" data-fragment-index="4">what now?</div>
+					<div class="fragment" data-fragment-index="5">[][] --[]+A--> [A][A] --[A][]+B--> [A,B][] --[A,B][]+A--> [A,B][A]</div>
+					<div class="fragment" data-fragment-index="6">How?</div>
+					<div class="fragment" data-fragment-index="7">Ok, just dwelve into!</div>
+					<aside class="notes">
+						Everyone makes mistakes
+					</aside>
+				</section>
+
+<style>
+.horizontal-list li {
+	display: inline;
+	list-style-type: none;
+	padding-right: 20px;
+}
+</style>
+				<section>
+					<section>
+						<h2 class="slide-heading">Installation</h2>
+						<h3>Supported platforms</h3>
+						<ul>
+							<li>Hardware
+								<ul class="horizontal-list">
+									<li>arm</li>
+									<li>i686</li>
+									<li>mips</li>
+									<li>x86_64</li>
+								</ul>
+							</li>
+							<li>Software
+								<ul class="horizontal-list">
+									<li>cygwin</li>
+									<li>darwin</li>
+									<li>illumos(solaris)</li>
+									<li>linux</li>
+									<li>netbsd</li>
+									<li>openbsd</li>
+									<li>freebsd</li>
+								</ul>
+							</li>
+						</ul>
+						<aside class="notes">
+							https://github.com/NixOS/nixpkgs/blob/master/lib/platforms.nix
+						</aside>
+					</section>
+					<section>
+						<h2 class="slide-heading">Installation</h2>
+						<h3>Single-user</h3>
+							<pre><code data-trim data-noescape>
+#!/bin/bash
+curl https://nixos.org/nix/install | sh
+							</code></pre>
+						<h3>Multi-user</h3>
+							<pre><code data-trim data-noescape>
+#!/bin/bash
+curl https://nixos.org/nix/install | sh
+groupadd -r nixbld
+for n in $(seq 1 10); do useradd -c "Nix build user $n" \
+	-d /var/empty -g nixbld -G nixbld -M -N -r \
+	-s "$(which nologin)" nixbld$n;
+done
+nix-daemon
+							</code></pre>
+						<aside class="notes">
+							http://nixos.org/nix/manual/#ssec-multi-user
+							We're here for concepts, not commands though.
+						</aside>
+					</section>
+				</section>
+
+				<section>
+					<section>
+						<h2 class="slide-heading">Profile</h2>
+						<h3>System profile</h3>
+						<pre>
+$ echo $PATH | tr : '\n'
+/run/current-system/sw/bin
+/run/current-system/sw/sbin
+/run/current-system/sw/lib/kde4/libexec
+$ ls -l /run/current-system/sw
+lrwxrwxrwx 1 root root 55 1970-01-01  /run/current-system/sw -> /nix/store/dkba63p5z5af8qiq9kgjaml6nswiqp2p-system-path
+$ ls -l /nix/store/dkba63p5z5af8qiq9kgjaml6nswiqp2p-system-path
+razem 84
+dr-xr-xr-x  2 root root 36864 1970-01-01  bin
+dr-xr-xr-x  7 root root  4096 1970-01-01  etc
+dr-xr-xr-x  2 root root  4096 1970-01-01  info
+dr-xr-xr-x 13 root root 20480 1970-01-01  lib
+dr-xr-xr-x  2 root root 12288 1970-01-01  sbin
+dr-xr-xr-x 21 root root  4096 1970-01-01  share
+$ ls -l /nix/store/dkba63p5z5af8qiq9kgjaml6nswiqp2p-system-path/bin
+razem 4980
+lrwxrwxrwx 1 root root 64 1970-01-01  '[' -> '/nix/store/95wmyhk0y60r09b98l6v4vswv5m7xm4q-coreutils-8.25/bin/['
+lrwxrwxrwx 1 root root 66 1970-01-01  2to3 -> /nix/store/awbf3jh262m1k16hxgbgngdmxv66gd79-python-2.7.11/bin/2to3
+lrwxrwxrwx 1 root root 61 1970-01-01  7z -> /nix/store/ynvzkiqy3j17aln8rwpv2bjw64108yci-p7zip-9.38/bin/7z
+lrwxrwxrwx 1 root root 62 1970-01-01  7za -> /nix/store/ynvzkiqy3j17aln8rwpv2bjw64108yci-p7zip-9.38/bin/7za
+lrwxrwxrwx 1 root root 62 1970-01-01  7zr -> /nix/store/ynvzkiqy3j17aln8rwpv2bjw64108yci-p7zip-9.38/bin/7zr
+						</pre>
+						We just gained atomic deployments by updating a symlink.
+						<aside class="notes">
+							That's an example of global profile in NixOS.
+							Profile is a sort of symlink collection representing directory tree. If tree node contains leafs from 1 package, it's linked directly. If not, then directory is created and leafs are created recursively.
+							When you update your configuration i.e. install or remove a package, nix builds a profile as a new directory in /nix/store. If everything goes well, configuration is deployed by simply updating symlink.
+							Users are able to also switch to other profiles than default ( i.e. per project / job he is working on )
+						</aside>
+					</section>
+					<section>
+						<h2 class="slide-heading">Profile</h2>
+						<h3>User profile</h3>
+						<pre>
+$ echo $PATH | tr : '\n'
+/home/shd/.nix-profile/bin
+/home/shd/.nix-profile/sbin
+/home/shd/.nix-profile/lib/kde4/libexec
+$ ls -l /home/shd/.nix-profile
+lrwxrwxrwx 1 shd users 29 03-11 03:11 /home/shd/.nix-profile -> /nix/var/nix/profiles/default
+ls -l /nix/var/nix/profiles/default
+lrwxrwxrwx 1 root root 15 06-03 14:12 /nix/var/nix/profiles/default -> default-71-link
+ls -l /nix/var/nix/profiles/default-71-link
+lrwxrwxrwx 1 root root 60 06-03 14:12 /nix/var/nix/profiles/default-71-link -> /nix/store/54filhqgcmzhdg0a1b5ic7pbv70a19p5-user-environment
+$ ls -l /home/shd/.nix-profile/
+razem 20
+dr-xr-xr-x 2 root root 4096 1970-01-01  bin
+lrwxrwxrwx 1 root root   64 1970-01-01  libexec -> /nix/store/z1bmidg3mzi2y1krxhfxxz1mvxlz205y-gnupg-2.1.12/libexec
+lrwxrwxrwx 1 root root   60 1970-01-01  manifest.nix -> /nix/store/0zy4iiva47pkbq7by3b3jiwljh02i32j-env-manifest.nix
+lrwxrwxrwx 1 root root   61 1970-01-01  sbin -> /nix/store/z1bmidg3mzi2y1krxhfxxz1mvxlz205y-gnupg-2.1.12/sbin
+dr-xr-xr-x 5 root root 4096 1970-01-01  share
+$ ls -l /home/shd/.nix-profile/bin
+razem 72
+lrwxrwxrwx 1 root root 73 1970-01-01  addgnupghome -> /nix/store/z1bmidg3mzi2y1krxhfxxz1mvxlz205y-gnupg-2.1.12/bin/addgnupghome
+lrwxrwxrwx 1 root root 79 1970-01-01  applygnupgdefaults -> /nix/store/z1bmidg3mzi2y1krxhfxxz1mvxlz205y-gnupg-2.1.12/bin/applygnupgdefaults
+lrwxrwxrwx 1 root root 68 1970-01-01  dirmngr -> /nix/store/z1bmidg3mzi2y1krxhfxxz1mvxlz205y-gnupg-2.1.12/bin/dirmngr
+lrwxrwxrwx 1 root root 75 1970-01-01  dirmngr-client -> /nix/store/z1bmidg3mzi2y1krxhfxxz1mvxlz205y-gnupg-2.1.12/bin/dirmngr-client
+						</pre>
+						Different users can use different sets of packages ( in different versions ).
+						But what about libraries?
+						<aside class="notes">
+							That's an example of per-user profile in Nix.
+							NixOS profiles are also versioned, /run/current-system/sw is configured during system bootstrap. Normally you have multiple kernel / init / profile versions as different bootloader entries.
+						</aside>
+					</section>
+				</section>
+
+				<section>
+					<section>
+						<h2 class="slide-heading">Isolation</h2>
+						<h3>Source packages</h3>
+						<pre><code data-trim data-noescape>
+gcc -Wl,-dynamic-linker,$(cat $NIX_CC/nix-support/dynamic-linker) \
+	-Wl,-rpath,$out/lib
+						</pre></code>
+						<aside class="notes">
+						</aside>
+					</section>
+					<section>
+						<h2 class="slide-heading">Isolation</h2>
+						<h3>Binary packages</h3>
+						<pre><code data-trim data-noescape>
+patchelf --set-interpreter \
+	$(cat $NIX_CC/nix-support/dynamic-linker) \
+	$f
+patchelf --set-rpath $out/lib $f
+						</pre></code>
+						<aside class="notes">
+						</aside>
+					</section>
+					<section>
+						<h2 class="slide-heading">Isolation</h2>
+						<h3>Result</h3>
+						<pre><code data-trim data-noescape>
+$ ldd `which vim`
+	linux-vdso.so.1 (0x00007fff9e7df000)
+	libm.so.6 => /nix/store/pv9sza1cf2kpawck7wbwdnhlip5h57lg-glibc-2.23/lib/libm.so.6 (0x00007fade49d0000)
+	libncursesw.so.5 => /nix/store/frv0qy52hk6vv1fn6nh7m4grw7qxsydy-ncurses-5.9/lib/libncursesw.so.5 (0x00007fade476a000)
+	libdl.so.2 => /nix/store/pv9sza1cf2kpawck7wbwdnhlip5h57lg-glibc-2.23/lib/libdl.so.2 (0x00007fade4566000)
+	libc.so.6 => /nix/store/pv9sza1cf2kpawck7wbwdnhlip5h57lg-glibc-2.23/lib/libc.so.6 (0x00007fade41ca000)
+	/nix/store/pv9sza1cf2kpawck7wbwdnhlip5h57lg-glibc-2.23/lib/ld-linux-x86-64.so.2 (0x00007fade4cd4000)
+						</pre></code>
+						<aside class="notes">
+						</aside>
+					</section>
+				</section>
+
+				<section>
+					<h2 class="slide-heading">Build reproducibility</h2>
+					* hash -> sum of inputs ( source, libraries, compiler etc. )
+					* hash known before actual build process, thus parallel builds / binary caches available
+					* packages are tested in chroot environments to make sure there are no dependency leaks
+					* no bit-identical output yet, thus you still need to trust your binary provider ( i.e. no DHT-based binary stores )
+					<aside class="notes">
+						As you probably noticed, packages in nix-store are prefixed with hash.
+					</aside>
+				</section>
+
+				<section>
+					<section>
+						<h2 class="slide-heading">Channels</h2>
+						<a href="https://nixos.org/channels/nixpkgs-unstable/">https://nixos.org/channels/nixpkgs-unstable/</a>
+						<ul>
+							<li>binary-cache-url</li>
+							<li>git-revision</li>
+							<li>github-link</li>
+							<li>manual/</li>
+							<li>nixexprs.tar.xz</li>
+							<li>nixexprs.tar.xz.sha256</li>
+							<li>src-url</li>
+							<li>store-paths.xz</li>
+						</ul>
+						<aside class="notes">
+						</aside>
+					</section>
+					<section>
+						<h2 class="slide-heading">Network cache ( channels )</h2>
+						<pre><code data-trim data-noescape>
+$ tree ~/.nix-defexpr/
+/root/.nix-defexpr/
+└── channels -> /nix/var/nix/profiles/per-user/root/channels
+						</pre></code>
+
+						<pre><code data-trim data-noescape>
+$ ls /nix/var/nix/profiles/per-user/root/
+channels  channels-20-link  channels-21-link
+						</pre></code>
+
+						<pre><code data-trim data-noescape>
+$ tree /nix/var/nix/profiles/per-user/root/channels
+/nix/var/nix/profiles/per-user/root/channels
+├── binary-caches -> /nix/store/m1nblhmhn4zgl4ydv1dxc4xfgnpq4s52-nixos-16.09pre82105.7465bcd/binary-caches
+├── manifest.nix -> /nix/store/5cbwmyl60sa4sxq5k7f67hkqh70yd4yl-env-manifest.nix
+└── nixos -> /nix/store/m1nblhmhn4zgl4ydv1dxc4xfgnpq4s52-nixos-16.09pre82105.7465bcd/nixos
+						</pre></code>
+						<pre><code data-trim data-noescape>
+$ cat /nix/store/5cbwmyl60sa4sxq5k7f67hkqh70yd4yl-env-manifest.nix
+[
+	{ meta = { };
+		name = "nixos-16.09pre82105.7465bcd";
+		out = { outPath = "/nix/store/m1nblhmhn4zgl4ydv1dxc4xfgnpq4s52-nixos-16.09pre82105.7465bcd"; };
+		outPath = "/nix/store/m1nblhmhn4zgl4ydv1dxc4xfgnpq4s52-nixos-16.09pre82105.7465bcd";
+		outputs = [ "out" ];
+		system = "x86_64-linux";
+		type = "derivation";
+	}
+]
+						</pre></code>
+						<aside class="notes">
+							Definitions of available packages
+						</aside>
+					</section>
+				</section>
+
+				<section>
+					<section>
+						<h2 class="slide-heading">Nix Language</h2>
+						<pre><code data-trim data-noescape>
+nix-repl> 1+1
+2
+						</pre></code>
+						Purely functional language suited for configuration
+					</section>
+					<section>
+						<h2 class="slide-heading">Nix Language</h2>
+						<pre><code data-trim data-noescape>
+nix-repl> person = {name="john"; surname="kowalski";}
+
+nix-repl> person
+{ name = "john"; surname = "kowalski"; }
+
+nix-repl> person = person // {surname="smith";}
+
+nix-repl> person.surname
+"smith"
+						</pre></code>
+						<ul>
+							<li>{} defines a hashmap</li>
+							<li>// is an overriding operator</li>
+						</ul>
+						<aside class="notes">
+						</aside>
+					</section>
+
+					<section>
+						<h2 class="slide-heading">Nix Language</h2>
+						<pre><code data-trim data-noescape>
+nix-repl> mul = a: b: a*b
+
+nix-repl> with import &lt;nixpkgs/lib&gt;; map (mul 2) (range 1 3)
+[ 2 4 6 ]
+
+nix-repl> people = [ {name="Anna"; kids=3;}
+	{name="Jonathan"; kids=2;} ]
+
+nix-repl> with import &lt;nixpkgs/lib&gt;; let value = 500; in
+	(foldl
+		(x: y: {kids=x.kids+y.kids;})
+		{kids=0;} people).kids * value
+2500
+						</pre></code>
+						<ul>
+							<li>: follows every function parameter</li>
+							<li>import includes expressions from different package</li>
+							<li>functions are curried by default</li>
+							<li>[] denotes a list definition</li>
+							<li>let ...; in allows to define a variable within a given scope</li>
+						</ul>
+						<aside class="notes">
+						</aside>
+					</section>
+
+					<section>
+						<h2 class="slide-heading">Nix Language</h2>
+						<pre><code data-trim data-noescape>
+$ ls /nix/var/nix/profiles/per-user/root/channels/nixos/
+COPYING  default.nix  doc  lib  maintainers  nixos  nixpkgs  pkgs  README.md  svn-revision
+						</pre></code>
+						<pre><code data-trim data-noescape>
+$ ls /nix/var/nix/profiles/per-user/root/channels/nixos/lib
+attrsets.nix               customisation.nix  default.nix     licenses.nix  maintainers.nix  minver.nix   options.nix    sandbox.nix  strings.nix            systems.nix  tests.nix    types.nix
+composable-derivation.nix  debug.nix          deprecated.nix  lists.nix     meta.nix         modules.nix  platforms.nix  sources.nix  strings-with-deps.nix  tests        trivial.nix
+						</pre></code>
+						<pre><code data-trim data-noescape>
+$ ls $NIXPKGS/lib/default.nix
+						</pre></code>
+						<span style="font-size: 70%">import &lt;nixpkgs/lib&gt; includes expression located under $NIXPKGS/lib/default.nix</span>
+					</section>
+
+				</section>
+
+				<section>
+					<section>
+						<h2 class="slide-heading">Nix Package</h2>
+						<ul>
+							<li>Is a function ( actually derivation )</li>
+							<li>Written in Nix language ( Scheme in case of Guix )</li>
+							<li>Abstraction between stateful Makefile and pure nix expression.</li>
+						</ul>
+						<aside class="notes">
+							Profiles are also a derivation that depend upon packages.
+						</aside>
+					</section>
+
+					<section>
+						<h2 class="slide-heading">Nix Package</h2>
+						<pre><code data-trim data-noescape>
+nix-repl> builtins.currentSystem
+"x86_64-linux"
+						</pre></code>
+						<pre><code data-trim data-noescape>
+nix-repl> :l <nixpkgs>
+Added 6400 variables.
+
+nix-repl> :b derivation {
+	name = "example";
+	builder = "${bash}/bin/bash";
+	args = [ (builtins.toFile "builder.sh" "echo 'Hello World!' > $out") ];
+	system = builtins.currentSystem;
+}
+these derivations will be built:
+  /nix/store/nqva1zxm8rpf0ymql0l75scyzga30rpb-example.drv
+building path(s) ‘/nix/store/4d65rhhfbv9rvz6rgxpamb6h44a9h3b7-example’
+warning: you did not specify ‘--add-root’; the result might be removed by the garbage collector
+/nix/store/4d65rhhfbv9rvz6rgxpamb6h44a9h3b7-example
+
+this derivation produced the following outputs:
+  out -> /nix/store/4d65rhhfbv9rvz6rgxpamb6h44a9h3b7-example
+						</pre></code>
+						<pre><code data-trim data-noescape>
+$ cat /nix/store/4d65rhhfbv9rvz6rgxpamb6h44a9h3b7-example
+Hello World!
+						</pre></code>
+						<aside class="notes">
+							Call native function called derivation with specified parameters and build it.
+						</aside>
+					</section>
+
+					<section>
+						<h2 class="slide-heading">Nix Package</h2>
+						<pre><code data-trim data-noescape>
+with import &lt;nixpkgs&gt; {};
+
+stdenv.mkDerivation {
+  name = "hello-2.1.1";
+  builder = ./builder.sh;
+  src = fetchurl {
+    url = ftp://ftp.nluug.nl/pub/gnu/hello/hello-2.1.1.tar.gz;
+    md5 = "70c9ccf9fac07f762c24f2df2290784d";
+  };
+  inherit perl;
+}
+						</pre></code>
+						<pre><code data-trim data-noescape>
+source $stdenv/setup
+
+PATH=$perl/bin:$PATH
+
+tar xvfz $src
+cd hello-*
+./configure --prefix=$out
+make
+make install
+						</pre></code>
+						<pre><code data-trim data-noescape>
+$ nix-build
+						</pre></code>
+						<aside class="notes">
+							inherit perl, is the same as doing perl = perl
+						</aside>
+					</section>
+
+					<section>
+						<h2 class="slide-heading">Nix Package</h2>
+						<pre><code style="font-size:70%;" data-trim data-noescape>
+{ stdenv, fetchFromGitHub, curl, boost, jsoncpp, liboauth, rhash, tinyxml, htmlcxx, help2man }:
+
+stdenv.mkDerivation rec {
+  name = "lgogdownloader-${version}";
+  version = "2.26";
+
+  src = fetchFromGitHub {
+    owner = "Sude-";
+    repo = "lgogdownloader";
+    rev = "v${version}";
+    sha256 = "0277g70nvq7bh42gnry7lz7wqhw8wl2hq6sfxwhn8x4ybkalj2gx";
+  };
+
+  buildInputs = [ curl boost jsoncpp liboauth rhash tinyxml htmlcxx help2man ];
+
+  makeFlags = [ "release" "PREFIX=$(out)" ];
+
+  meta = {
+    homepage = https://github.com/Sude-/lgogdownloader;
+    description = "Unofficial downloader to GOG.com for Linux users. It uses the same API as the official GOGDownloader";
+    license = stdenv.lib.licenses.wtfpl;
+    platforms = stdenv.lib.platforms.linux;
+  };
+}
+						</pre></code>
+						<ul>
+							<li>Replace import of all packages with selective import</li>
+							<li>Specify buildInputs to differentiate between build/runtime dependencies</li>
+						</ul>
+						<aside class="notes">
+						</aside>
+					</section>
+
+				</section>
+
+				<section>
+					<section>
+						<h2 class="slide-heading">Hackable</h2>
+						<pre><code data-trim data-noescape>
+$ git clone git@github.com:NixOS/nixpkgs.git
+$ export NIXPKGS=`pwd`/nixpkgs
+						</pre></code>
+						<pre><code data-trim data-noescape>
+lgogdownloader = callPackage ../games/lgogdownloader { };
+boost = self.boost160;
+boost160 = callPackage ../development/libraries/boost/1.60.nix { };
+						</pre></code>
+						<pre><code data-trim data-noescape>
+lgogdownloader = callPackage ../games/lgogdownloader {
+	boost = self.boost159 
+};
+boost159 = callPackage ../development/libraries/boost/1.59.nix { };
+						</pre></code>
+						You can override your package directly in the source tree
+					</section>
+
+					<section>
+						<h2 class="slide-heading">Hackable</h2>
+						<pre><code data-trim data-noescape>
+  chromium = callPackage ../applications/networking/browsers/chromium {
+    channel = "stable";
+    pulseSupport = config.pulseaudio or true;
+    enablePepperFlash = config.chromium.enablePepperFlash or false;
+    enableWideVine = config.chromium.enableWideVine or false;
+    hiDPISupport = config.chromium.hiDPISupport or false;
+  };
+
+						</pre></code>
+						<pre><code data-trim data-noescape>
+packageOverrides = pkgs: with pkgs; rec {
+	chromium = callPackage ../applications/networking/browsers/chromium {
+		channel = "stable";
+		pulseSupport = config.pulseaudio or true;
+		enablePepperFlash = true;
+		enableWideVine = false;
+		hiDPISupport = true;
+	};
+};
+						</pre></code>
+						<div>Or in your ~/.nixpkgs/config.nix</div>
+						<div>As long as package and its parameters will be in remote cache you wont need a recompilation.</div>
+						<aside class="notes">
+						</aside>
+					</section>
+
+				</section>
+
+				<section>
+					<h2 class="slide-heading">Unix-friendly</h2>
+					<pre><code data-trim data-noescape>
+$ nix-store -q --references $(which bash)
+/nix/store/9xsjqbsldr86vvs7p5ps4qlkjv9dhc0k-glibc-2.23
+/nix/store/hbgd7mbpylfz6zxj5bkdyi07yag77b8l-bash-4.3-p42
+/nix/store/rgvq65vi785dhqkhb5w4frs2d365589k-ncurses-5.9
+/nix/store/jzlfj459383d93gf388ar3skhybwmi44-readline-6.3p08
+/nix/store/s4v4jfw6595iaan5gz4dc1z69q20mlhd-bash-4.3-p42
+					</pre></code>
+					<pre><code data-trim data-noescape>
+$ nix-store -q --referrers $(which bash)
+/nix/store/s4v4jfw6595iaan5gz4dc1z69q20mlhd-bash-4.3-p42
+/nix/store/2j3w04nyyfqi1ss9j8dmjzvbfq53awrd-system-path
+/nix/store/fspj8zz1ki16whsw0ii0400f8p3f82fi-system-path
+/nix/store/5cf3yd59wbz07babgsdcb92lzwc441kf-etc-shells
+/nix/store/c2mm54gyiif7rp9wwv46xma8rnzx2bkh-steam-usr-target
+					</pre></code>
+					<pre><code data-trim data-noescape>
+$ nix-store -q --tree ~/.nix-profile
+/nix/store/8b9872z5yrlhdwkrcqpsjr208il1d2k6-user-environment
++---/nix/store/bj9bnmfkr52ghcc9zdpzfp239x02j9rp-neovim-0.1.2
+|   +---/nix/store/pv9sza1cf2kpawck7wbwdnhlip5h57lg-glibc-2.23
+|   |   +---/nix/store/gygp4inn8w53wy161yy08ilf4kvzw0ki-linux-headers-3.18.14
+|   |   |   +---/nix/store/gygp4inn8w53wy161yy08ilf4kvzw0ki-linux-headers-3.18.14 [...]
+|   |   +---/nix/store/pv9sza1cf2kpawck7wbwdnhlip5h57lg-glibc-2.23 [...]
+|   +---/nix/store/idm1067y9i6m87crjqrbamdsq2ma5r7p-bash-4.3-p42
+|   |   +---/nix/store/pv9sza1cf2kpawck7wbwdnhlip5h57lg-glibc-2.23 [...]
+|   |   +---/nix/store/idm1067y9i6m87crjqrbamdsq2ma5r7p-bash-4.3-p42 [...]
+					</pre></code>
+					<aside class="notes">
+					</aside>
+				</section>
+
+				<section>
+					<section>
+						<h2 class="slide-heading">Extending this concept</h2>
+						<pre><code data-trim data-noescape>
+{ config, lib, pkgs, ... }:
+
+with lib;
+
+let
+  cfg = config.services.locate;
+in {
+  options.services.locate = {
+    enable = mkOption {
+      type = types.bool;
+      default = false;
+      description = ''
+        If enabled, NixOS will periodically update the database of
+        files used by the locate command.
+      '';
+    };
+
+    interval = mkOption {
+      type = types.str;
+      default = "02:15";
+      example = "hourly";
+      description = ''
+        Update the locate database at this interval. Updates by
+        default at 2:15 AM every day.
+
+        The format is described in
+        systemd.time(7).
+      '';
+    };
+
+    # Other options omitted for documentation
+  };
+
+  config = {
+    systemd.services.update-locatedb =
+      { description = "Update Locate Database";
+        path  = [ pkgs.su ];
+        script =
+          ''
+            mkdir -m 0755 -p $(dirname ${toString cfg.output})
+            exec updatedb \
+              --localuser=${cfg.localuser} \
+              ${optionalString (!cfg.includeStore) "--prunepaths='/nix/store'"} \
+              --output=${toString cfg.output} ${concatStringsSep " " cfg.extraFlags}
+          '';
+      };
+
+    systemd.timers.update-locatedb = mkIf cfg.enable
+      { description = "Update timer for locate database";
+        partOf      = [ "update-locatedb.service" ];
+        wantedBy    = [ "timers.target" ];
+        timerConfig.OnCalendar = cfg.interval;
+      };
+  };
+}
+						</pre></code>
+					</section>
+					<section>
+						<h2 class="slide-heading">Extending this concept</h2>
+						<pre><code data-trim data-noescape>
+{ nrMachines ? 2 }:
+
+with import <nixpkgs/lib>;
+
+let
+  adminAddr = "shd@nawia.net";
+  makeMachine = n: nameValuePair "backend${toString n}"
+  ({ config, pkgs, nodes, ... }:
+  { deployment.targetEnv = "virtualbox";
+    deployment.virtualbox.headless = true;
+    networking.firewall.allowedTCPPorts = [ 80 ];
+    services.httpd.enable = true;
+    services.httpd.adminAddr = adminAddr;
+    services.httpd.documentRoot = "${pkgs.valgrind.doc}/share/doc/valgrind/html";
+  }
+  );
+in
+  listToAttrs (map makeMachine (range 1 nrMachines))
+  //
+  {
+    test1 =
+    { config, pkgs, ... }:
+    { deployment.targetEnv = "virtualbox";
+      deployment.virtualbox.headless = true;
+      networking.firewall.allowedTCPPorts = [ 80 ];
+      services.httpd.enable = true;
+      services.httpd.adminAddr = adminAddr;
+      services.httpd.extraModules = ["proxy_balancer" "lbmethod_byrequests"];
+      services.httpd.extraConfig =
+        ''
+          <Proxy balancer://cluster>
+            Allow from all
+        '' + (concatStringsSep "\n" (map (n: "BalancerMember http://backend${toString n} retry=0\n") (range 1 nrMachines))) + ''
+          </Proxy>
+          ProxyPass         /    balancer://cluster/
+          ProxyPassReverse  /    balancer://cluster/
+        '';
+    };
+  }
+						</pre></code>
+					</section>
+					<section>
+						<h2 class="slide-heading">Extending this concept</h2>
+						<pre><code data-trim data-noescape>
+{system, pkgs}:
+
+rec {
+  rooms = import ../pkgs/databases/rooms {
+    inherit (pkgs) stdenv;
+  };
+  
+  staff = import ../pkgs/databases/staff {
+    inherit (pkgs) stdenv;
+  };
+  
+  zipcodes = import ../pkgs/databases/zipcodes {
+    inherit (pkgs) stdenv;
+  };
+
+  ZipcodeService = import ../pkgs/webservices/ZipcodeService { 2
+    inherit (pkgs) stdenv apacheAnt axis2;
+  };
+  
+  ZipcodeServiceClient = import ../pkgs/webservices/ZipcodeServiceClient {
+    inherit (pkgs) stdenv apacheAnt axis2;
+  };
+
+  StaffTracker = import ../pkgs/webapplications/StaffTracker {
+    inherit (pkgs) stdenv apacheAnt axis2;
+    inherit GeolocationServiceClient RoomServiceClient StaffServiceClient ZipcodeServiceClient;
+  };
+}
+						</pre></code>
+						<aside class="notes">
+						</aside>
+					</section>
+
+				</section>
+
+				<section>
+					<h2 class="slide-heading">Questions?</h2>
+					<img class="plain" src="images/logo.png" style="width:300px">
+					<h3>Mariusz Gliwiński &lt;shd@nawia.net&gt;</h3>
+				</section>
+
+		</section>
+
+			</div>
+
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				// progress: true,
+				history: true,
+				center: true,
+
+				transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true },
+					{ src: 'plugin/notes/notes.js', async: true }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>

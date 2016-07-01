@@ -1,0 +1,351 @@
+	<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>LiveWyer Presentation</title>
+
+		<meta name="description" content="A framework for easily creating beautiful presentations using HTML">
+		<meta name="author" content="Hakim El Hattab">
+
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/black.css" id="theme">
+
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+				<section data-background="images/cover-slide-bg-white.png">
+					<h1 class="cover-heading">TAKING KUBERNETES LIVE</h1>
+					<p class="slide-copy">@</p>
+					<img class="plain" src="images/lwlogo.svg" style="width:400px; background-color:transparent;">
+					<aside class="notes">
+						
+					</aside>
+				</section>
+
+				<section data-background="images/content-slide-bg.png" style="margin-top:-35px;">
+					<h2 class="slide-heading">Introductions</h2>
+					<div class="fragment">
+						<ul class="slide-copy" style="list-style: outside none none; text-align: center; margin-left: -25px;">
+							<li><img class="" src="images/dave.jpg" style="height: 100px;"></li>
+							<li style="font-weight:700;">David O'Dwyer</li>
+							<li>Founder, LiveWyer</li>
+							<li><img class="plain" src="images/lwlogo.svg" style="height:25px; background:none;"></li>
+						</ul>
+					</div>
+					<aside class="notes">
+						
+					</aside>
+				</section>
+
+				<section data-background="images/content-slide-bg.png" style="margin-top:-35px;">
+					<h2 class="slide-heading">About Us</h2>
+					<div class="fragment">
+						<ul class="slide-copy" style="list-style: outside none none; text-align: center; margin-left: -25px;">
+							<li><img class="plain" src="images/lwlogo.svg" style="height:25px; background:none;"></li>
+							<li>Founded in 2009, LiveWyer is a privately owned London-based company.</li>
+							<li style="margin-top:15px;">Our expertise includes DevOps, IT systems training, Drupal builds and hosting, Kubernetes containerised technology and full-stack optimisation.</li>
+						</ul>
+					</div>
+					<aside class="notes">
+						
+					</aside>
+				</section>
+
+				<section data-background="images/content-slide-bg.png" style="margin-top:-35px;">
+					<h2 class="slide-heading">What I will demo</h2>
+
+					<aside class="notes">
+						
+					</aside>
+				</section>
+
+				<section>
+					<section data-background="images/content-slide-bg.png" style="margin-top:-35px;">
+						<h2 class="slide-heading">Kubernetes Crash Course</h2>
+						<h3 class="slide-subheading">Containers</h3>
+
+						<aside class="notes">
+							
+						</aside>
+					</section>
+
+					<section data-background="images/content-slide-bg.png" style="margin-top:-35px;">
+						<h2 class="slide-heading">Kubernetes Crash Course</h2>
+						<h3 class="slide-subheading">Volumes</h3>
+
+						<aside class="notes">
+							
+						</aside>
+					</section>
+
+					<section data-background="images/content-slide-bg.png" style="margin-top:-35px;">
+						<h2 class="slide-heading">Kubernetes Crash Course</h2>
+						<h3 class="slide-subheading">Pods</h3>
+
+						<aside class="notes">
+							
+						</aside>
+					</section>
+
+					<section data-background="images/content-slide-bg.png" style="margin-top:-35px;">
+						<h2 class="slide-heading">Kubernetes Crash Course</h2>
+						<h3 class="slide-subheading">Sets</h3>
+
+						<aside class="notes">
+							
+						</aside>
+					</section>
+
+					<section data-background="images/content-slide-bg.png" style="margin-top:-35px;">
+						<h2 class="slide-heading">Kubernetes Crash Course</h2>
+						<h3 class="slide-subheading">Services</h3>
+
+						<aside class="notes">
+							
+						</aside>
+					</section>
+
+					<section data-background="images/content-slide-bg.png" style="margin-top:-35px;">
+						<h2 class="slide-heading">Kubernetes Crash Course</h2>
+						<h3 class="slide-subheading">Namespaces</h3>
+
+						<aside class="notes">
+							
+						</aside>
+					</section>
+				</section>
+
+				<section data-background="images/content-slide-bg.png" style="margin-top:-35px;">
+					<h2 class="slide-heading">What does it look like?</h2>
+
+					<aside class="notes">
+						
+					</aside>
+				</section>
+
+				<section data-background="images/content-slide-bg.png" style="margin-top:-35px;">
+					<h2 class="slide-heading">How does it compare?</h2>
+
+					<aside class="notes">
+						
+					</aside>
+				</section>
+
+				<section>
+					<section data-background="images/content-slide-bg.png" style="margin-top:-35px;">
+						<h2 class="slide-heading">Demo - Build the Cluster</h2>
+						<h3 class="slide-subheading">What We Did</h3>
+						<aside class="notes">
+							
+						</aside>
+					</section>
+					<section data-background="images/content-slide-bg.png" style="margin-top:-35px;">
+						<h2 class="slide-heading">Demo - Build the Cluster</h2>
+						<h3 class="slide-subheading">What does it look like?</h3>
+						<aside class="notes">
+							
+						</aside>
+					</section>
+				</section>
+
+				<section>
+					<section data-background="images/content-slide-bg.png" style="margin-top:-35px;">
+						<h2 class="slide-heading">Demo - Add Core Services</h2>
+						<h3 class="slide-subheading">What We Did</h3>
+						<aside class="notes">
+							
+						</aside>
+					</section>
+					<section data-background="images/content-slide-bg.png" style="margin-top:-35px;">
+						<h2 class="slide-heading">Demo - Add Core Services</h2>
+						<h3 class="slide-subheading">What does it look like?</h3>
+						<aside class="notes">
+							
+						</aside>
+					</section>
+				</section>
+
+				<section>
+					<section data-background="images/content-slide-bg.png" style="margin-top:-35px;">
+						<h2 class="slide-heading">Demo - Guestbook build</h2>
+						<h3 class="slide-subheading">What We Did</h3>
+						<aside class="notes">
+							
+						</aside>
+					</section>
+					<section data-background="images/content-slide-bg.png" style="margin-top:-35px;">
+						<h2 class="slide-heading">Demo - Guestbook build</h2>
+						<h3 class="slide-subheading">What does it look like?</h3>
+						<aside class="notes">
+							
+						</aside>
+					</section>
+				</section>
+
+				<section>
+					<section data-background="images/content-slide-bg.png" style="margin-top:-35px;">
+						<h2 class="slide-heading">Demo - Guestbook scaling</h2>
+						<h3 class="slide-subheading">What We Did</h3>
+						<aside class="notes">
+							
+						</aside>
+					</section>
+					<section data-background="images/content-slide-bg.png" style="margin-top:-35px;">
+						<h2 class="slide-heading">Demo - Guestbook scaling</h2>
+						<h3 class="slide-subheading">What does it look like?</h3>
+						<aside class="notes">
+							
+						</aside>
+					</section>
+				</section>
+
+				<section>
+					<section data-background="images/content-slide-bg.png" style="margin-top:-35px;">
+						<h2 class="slide-heading">Demo - Drupal production build</h2>
+						<h3 class="slide-subheading">What We Did</h3>
+						<aside class="notes">
+							
+						</aside>
+					</section>
+					<section data-background="images/content-slide-bg.png" style="margin-top:-35px;">
+						<h2 class="slide-heading">Demo - Drupal production build</h2>
+						<h3 class="slide-subheading">What does it look like?</h3>
+						<aside class="notes">
+							
+						</aside>
+					</section>
+				</section>
+
+				<section>
+					<section data-background="images/content-slide-bg.png" style="margin-top:-35px;">
+						<h2 class="slide-heading">Demo - Drupal test pipeline</h2>
+						<h3 class="slide-subheading">What We Did</h3>
+						<aside class="notes">
+							
+						</aside>
+					</section>
+					<section data-background="images/content-slide-bg.png" style="margin-top:-35px;">
+						<h2 class="slide-heading">Demo - Drupal test pipeline</h2>
+						<h3 class="slide-subheading">What does it look like?</h3>
+						<aside class="notes">
+							
+						</aside>
+					</section>
+				</section>
+
+				<section>
+					<section data-background="images/content-slide-bg.png" style="margin-top:-35px;">
+						<h2 class="slide-heading">Demo - Drupal release & scale</h2>
+						<h3 class="slide-subheading">What We Did</h3>
+						<aside class="notes">
+							
+						</aside>
+					</section>
+					<section data-background="images/content-slide-bg.png" style="margin-top:-35px;">
+						<h2 class="slide-heading">Demo - Drupal release & scale</h2>
+						<h3 class="slide-subheading">What does it look like?</h3>
+						<aside class="notes">
+							
+						</aside>
+					</section>
+				</section>
+
+				<section data-background="images/content-slide-bg.png" style="margin-top:-35px;">
+					<h2 class="slide-heading">Recap</h2>
+
+					<aside class="notes">
+						
+					</aside>
+				</section>
+
+				<section data-background="images/content-slide-bg.png" style="margin-top:-35px;">
+					<h2 class="slide-heading">Kubernetes 1.3</h2>
+
+					<aside class="notes">
+						
+					</aside>
+				</section>
+
+				<section data-background="images/content-slide-bg.png" style="margin-top:-35px;">
+					<h2 class="slide-heading">Thanks for listening</h2>
+					<p class="slide-copy" style="font-weight:700;">Questions?</p>
+					<div class="fragment" style="margin-top:55px;">
+						<ul class="slide-copy" style="list-style: outside none none; text-align: center; margin-left: -25px;">
+							<li><img class="plain" src="images/lwlogo.svg" style="height:35px; background:none;"></li>
+							<li>www.livewyer.com</li>
+						</ul>
+					</div>
+				</section>
+
+				<section data-background="images/content-slide-bg.png">
+					<h2 class="slide-heading">Video</h2>
+					<video style="width: 800px;">
+					    <source src="images/video-3.mp4" type="video/mp4" />
+					</video>
+
+					<aside class="notes">
+						
+					</aside>
+				</section>
+
+			</div>
+
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+
+				transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true },
+					{ src: 'plugin/notes/notes.js', async: true }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>

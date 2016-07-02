@@ -262,42 +262,6 @@ $ ldd `which vim`
 
 				<section>
 					<section>
-						<h2 class="slide-heading">Package building process</h2>
-						<ul>
-							<li>Receive human-readable package description( .nix )</li>
-							<li>Convert that to machine-readable form ( .drv )</li>
-							<li>Build out-result</li>
-						</ul>
-					</section>
-					<section>
-						<h2 class="slide-heading">Quick look on .drv</h2>
-						<pre>
-$ pp-aterm -i /nix/store/l7mimhvayraxccihaw9ihmddq7dhll0n-vim_configurable-7.4.826.drv
-Derive(
-  [("out", "/nix/store/znd8bg8msphy5ly69lz4zffzzwcpq9qj-vim_configurable-7.4.826", "
-", "")]
-, [ ("/nix/store/0z6lnifsapzkaz3y0ni3hyj96bqxgsx8-vim-nox-hg-2082fc3.tar.bz2.drv", [
-"out"])
-  , ("/nix/store/m87wishf15ya7n60j68fj55zrmf8qnlg-glib-2.46.2.drv", ["out"])
-  ]
-  , ["/nix/store/9krlzvny65gdc8s7kpb6lkx8cd02c25b-default-builder.sh"]
-  , ("configureFlags", "--enable-gui=auto --with-features=huge --disable-acl --enable-cscopea")
-  , ("nativeBuildInputs", "/nix/store/zjla10glbmd7ih6ir1k38br0imv282q3-ncurses-5.9")
-						</pre>
-						<div class="fragment" data-fragment-index="1" style="font-size:0.8em">Unique /nix/store hash is computed before binary is built ( parallel builds ).</div>
-						<div class="fragment" data-fragment-index="2" style="font-size:0.8em">Trying to reach the point where everything that contributes to package output is a part of hash.</div>
-						<div class="fragment" data-fragment-index="3" style="font-size:0.8em">Obviously including other packages depended on.</div>
-						<div class="fragment" data-fragment-index="4" style="font-size:0.8em">Build-dependend things such as timestamps are tried to be cleared.</div>
-						<div class="fragment" data-fragment-index="5" style="font-size:0.8em">Packages are tested in chroot with only their dependencies included.</div>
-						<aside class="notes">
-							As you probably noticed, packages in nix-store are prefixed with hash.
-						  no bit-identical output yet, thus you still need to trust your binary provider ( i.e. no DHT-based binary stores )
-						</aside>
-					</section>
-				</section>
-
-				<section>
-					<section>
 						<h2 class="slide-heading">Channels</h2>
 						<a href="https://nixos.org/channels/nixpkgs-unstable/">https://nixos.org/channels/nixpkgs-unstable/</a>
 						<ul>
@@ -601,6 +565,96 @@ packageOverrides = pkgs: with pkgs; rec {
 				</section>
 
 				<section>
+					<section>
+						<h2 class="slide-heading">Package building process</h2>
+						<ul>
+							<li>Receive human-readable package description( .nix )</li>
+							<li>Convert that to machine-readable form ( .drv )</li>
+							<li>Build out-result</li>
+						</ul>
+					</section>
+					<section>
+						<h2 class="slide-heading">Quick look on .drv</h2>
+						<pre>
+$ pp-aterm -i /nix/store/l7mimhvayraxccihaw9ihmddq7dhll0n-vim_configurable-7.4.826.drv
+Derive(
+  [("out", "/nix/store/znd8bg8msphy5ly69lz4zffzzwcpq9qj-vim_configurable-7.4.826", "
+", "")]
+, [ ("/nix/store/0z6lnifsapzkaz3y0ni3hyj96bqxgsx8-vim-nox-hg-2082fc3.tar.bz2.drv", [
+"out"])
+  , ("/nix/store/m87wishf15ya7n60j68fj55zrmf8qnlg-glib-2.46.2.drv", ["out"])
+  ]
+  , ["/nix/store/9krlzvny65gdc8s7kpb6lkx8cd02c25b-default-builder.sh"]
+  , ("configureFlags", "--enable-gui=auto --with-features=huge --disable-acl --enable-cscopea")
+  , ("nativeBuildInputs", "/nix/store/zjla10glbmd7ih6ir1k38br0imv282q3-ncurses-5.9")
+						</pre>
+						<div class="fragment" data-fragment-index="1" style="font-size:0.8em">Unique /nix/store hash is computed before binary is built ( parallel builds ).</div>
+						<div class="fragment" data-fragment-index="2" style="font-size:0.8em">Trying to reach the point where everything that contributes to package output is a part of hash.</div>
+						<div class="fragment" data-fragment-index="3" style="font-size:0.8em">Obviously including other packages depended on.</div>
+						<div class="fragment" data-fragment-index="4" style="font-size:0.8em">Build-dependend things such as timestamps are tried to be cleared.</div>
+						<div class="fragment" data-fragment-index="5" style="font-size:0.8em">Packages are tested in chroot with only their dependencies included.</div>
+						<aside class="notes">
+							As you probably noticed, packages in nix-store are prefixed with hash.
+						  no bit-identical output yet, thus you still need to trust your binary provider ( i.e. no DHT-based binary stores )
+						</aside>
+					</section>
+
+					<section>
+						<h2 class="slide-heading">Testing package with nox</h2>
+						<pre><code data-trim data-noescape>
+$ cd $NIXPKGS && nox-review wip
+$ vim pkgs/tools/networking/ntopng/default.nix
+buildInputs = [ libpcap libxml2 glib geoip geolite-legacy
+	sqlite which autoreconfHook git pkgconfig groff curl json_c luajit zeromq
+	rrdtool
+];
+buildInputs = [ libxml2 glib geoip geolite-legacy
+	sqlite which autoreconfHook git pkgconfig groff curl json_c luajit zeromq
+	rrdtool
+];
+$ nix-shell -I nixpkgs=$NIXPKGS --pure -p ntopng
+$ echo $PATH
+						</pre></code>
+					</section>
+
+					<section>
+						<h2 class="slide-heading">Testing package with nox</h2>
+						<pre><code data-trim data-noescape>
+$ vim pkgs/development/libraries/glibc/builder.sh
+source $stdenv/setup
+touch $out/hello
+$ cd $NIXPKGS && nox-review wip
+						</pre></code>
+					</section>
+
+					<section>
+						<h2 class="slide-heading">Testing nixos packages</h2>
+						<pre><code data-trim data-noescape>
+$ nix-build '&lt;nixpkgs/nixos/tests/login.nix&gt;'
+machine# [   15.286364] reboot: machine restart
+vde_switch: EOF data port: Interrupted system call
+collecting coverage data
+syncing
+6 out of 6 tests succeeded
+vde_switch: EOF on stdin, cleaning up and exiting
+cleaning up
+/nix/store/pak4h9irxfa30rw9x9zb7lzfdd7ymr6v-vm-test-run-login
+						</pre></code>
+					</section>
+
+					<section>
+						<h2 class="slide-heading">Testing nixos packages</h2>
+						<pre><code data-trim data-noescape>
+$ nixos-rebuild build-vm
+$ nix-build -A iso_graphical.x86_64-linux $NIXPKGS/nixos/release.nix
+$ nix-build -A netboot.x86_64-linux $NIXPKGS/nixos/release.nix
+$ nix-build -A ova.x86_64-linux $NIXPKGS/nixos/release.nix
+$ NIXOS_CONFIG=$NIXPKGS/nixos/modules/virtualisation/nova-image.nix nix-build '&lt;nixpkgs/nixos&gt;' -A config.system.build.novaImage
+						</pre></code>
+					</section>
+				</section>
+
+				<section>
 					<h2 class="slide-heading">Unix-friendly</h2>
 					<pre><code data-trim data-noescape>
 $ nix-store -q --references $(which bash)
@@ -776,6 +830,45 @@ rec {
 						</aside>
 					</section>
 
+					<section>
+						<h2 class="slide-heading">Extending this concept</h2>
+						<pre><code data-trim data-noescape>
+{stdenv}:
+
+stdenv.mkDerivation {
+  name = "staff";
+  src = ../../../../services/databases/staff;
+  installPhase = ''
+    mkdir -p $out/mysql-databases
+    cp *.sql $out/mysql-databases
+  '';
+}
+						</pre></code>
+						<aside class="notes">
+						</aside>
+					</section>
+
+					<section>
+						<h2 class="slide-heading">Extending this concept</h2>
+						<pre><code data-trim data-noescape>
+{stdenv, apacheAnt, jdk, axis2}:
+
+stdenv.mkDerivation {
+  name = "ZipcodeService";
+  src = ../../../../services/webservices/ZipcodeService;
+  buildInputs = [ apacheAnt jdk ];
+  AXIS2_LIB = "${axis2}/lib";
+  AXIS2_WEBAPP = "${axis2}/webapps/axis2";
+  buildPhase = "ant generate.war";
+  installPhase = ''
+    mkdir -p $out/webapps
+    cp *.war $out/webapps
+  '';
+}
+						</pre></code>
+						<aside class="notes">
+						</aside>
+					</section>
 				</section>
 
 				<section>

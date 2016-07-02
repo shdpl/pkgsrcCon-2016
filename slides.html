@@ -261,15 +261,39 @@ $ ldd `which vim`
 				</section>
 
 				<section>
-					<h2 class="slide-heading">Build reproducibility</h2>
-					* hash -> sum of inputs ( source, libraries, compiler etc. )
-					* hash known before actual build process, thus parallel builds / binary caches available
-					* packages are tested in chroot environments to make sure there are no dependency leaks
-					* no bit-identical output yet, thus you still need to trust your binary provider ( i.e. no DHT-based binary stores )
-					* timestamps being set to beginning of unix epoch
-					<aside class="notes">
-						As you probably noticed, packages in nix-store are prefixed with hash.
-					</aside>
+					<section>
+						<h2 class="slide-heading">Package building process</h2>
+						<ul>
+							<li>Receive human-readable package description( .nix )</li>
+							<li>Convert that to machine-readable form ( .drv )</li>
+							<li>Build out-result</li>
+						</ul>
+					</section>
+					<section>
+						<h2 class="slide-heading">Quick look on .drv</h2>
+						<pre>
+$ pp-aterm -i /nix/store/l7mimhvayraxccihaw9ihmddq7dhll0n-vim_configurable-7.4.826.drv
+Derive(
+  [("out", "/nix/store/znd8bg8msphy5ly69lz4zffzzwcpq9qj-vim_configurable-7.4.826", "
+", "")]
+, [ ("/nix/store/0z6lnifsapzkaz3y0ni3hyj96bqxgsx8-vim-nox-hg-2082fc3.tar.bz2.drv", [
+"out"])
+  , ("/nix/store/m87wishf15ya7n60j68fj55zrmf8qnlg-glib-2.46.2.drv", ["out"])
+  ]
+  , ["/nix/store/9krlzvny65gdc8s7kpb6lkx8cd02c25b-default-builder.sh"]
+  , ("configureFlags", "--enable-gui=auto --with-features=huge --disable-acl --enable-cscopea")
+  , ("nativeBuildInputs", "/nix/store/zjla10glbmd7ih6ir1k38br0imv282q3-ncurses-5.9")
+						</pre>
+						<div class="fragment" data-fragment-index="1" style="font-size:0.8em">Unique /nix/store hash is computed before binary is built ( parallel builds ).</div>
+						<div class="fragment" data-fragment-index="2" style="font-size:0.8em">Trying to reach the point where everything that contributes to package output is a part of hash.</div>
+						<div class="fragment" data-fragment-index="3" style="font-size:0.8em">Obviously including other packages depended on.</div>
+						<div class="fragment" data-fragment-index="4" style="font-size:0.8em">Build-dependend things such as timestamps are tried to be cleared.</div>
+						<div class="fragment" data-fragment-index="5" style="font-size:0.8em">Packages are tested in chroot with only their dependencies included.</div>
+						<aside class="notes">
+							As you probably noticed, packages in nix-store are prefixed with hash.
+						  no bit-identical output yet, thus you still need to trust your binary provider ( i.e. no DHT-based binary stores )
+						</aside>
+					</section>
 				</section>
 
 				<section>

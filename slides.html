@@ -51,29 +51,29 @@
 
 				<section>
 					<section>
-						<h2 class="slide-heading">Imperative vs Purely Functional</h2>
+						<h2 class="slide-heading">Two approaches</h2>
 						<div class="fragment" data-fragment-index="1">
-							<h3>Imperative</h3>
 							[] --[]+A--> [A] --[A]+B--> [A,B] --[A,B]-B--> [A]
 						</div>
 						<div class="fragment" data-fragment-index="2">
-							<h3>Functional</h3>
+							<h3 style="margin-top:20px">OR</h3>
 							[] --[]+A--> [A] --[]+A+B--> [A,B] --[A,B]-B--> [A]
 						</div>
-						<h4 class="fragment" data-fragment-index="3">Occam's advice: why delete?</h4>
+						<h4 class="fragment" data-fragment-index="3" style="margin-top:20px">Occam's advice: why delete?</h4>
 					</section>
 					<section>
-						<h2 class="slide-heading">Imperative vs Purely Functional</h2>
+						<h2 class="slide-heading">Two approaches</h2>
 						<h4>Yeah, right... Clutter? Disk space? Build times?</h4>
 						<div class="fragment" data-fragment-index="1">
 							[][] --[]+A--> [A][A] --[A][]+B--> [A,B][] --[A,B][]+A--> [A,B][A]
 						</div>
-						<h4 class="fragment" data-fragment-index="2">Disk space?</h4>
+						<h4 class="fragment" data-fragment-index="2" style="margin-top:20px">Disk space?</h4>
 						<div class="fragment" data-fragment-index="3">
 							GC([A,B][A]) --> [A][A]
 						</div>
 					</section>
 					<aside class="notes">
+						Separate elements and collections
 					</aside>
 				</section>
 
@@ -156,28 +156,27 @@ nix-daemon
 					<section>
 						<h2 class="slide-heading">Profile</h2>
 						<h3>System profile</h3>
-						<pre>
+						<pre style="font-size: 0.50em">
 $ echo $PATH | tr : '\n'
 /run/current-system/sw/bin
 /run/current-system/sw/sbin
 /run/current-system/sw/lib/kde4/libexec
 $ ls -l /run/current-system/sw
-lrwxrwxrwx 1 root root 55 1970-01-01  /run/current-system/sw -> /nix/store/dkba63p5z5af8qiq9kgjaml6nswiqp2p-system-path
-$ ls -l /nix/store/dkba63p5z5af8qiq9kgjaml6nswiqp2p-system-path
-razem 84
-dr-xr-xr-x  2 root root 36864 1970-01-01  bin
-dr-xr-xr-x  7 root root  4096 1970-01-01  etc
-dr-xr-xr-x  2 root root  4096 1970-01-01  info
-dr-xr-xr-x 13 root root 20480 1970-01-01  lib
-dr-xr-xr-x  2 root root 12288 1970-01-01  sbin
-dr-xr-xr-x 21 root root  4096 1970-01-01  share
+/run/current-system/sw -> /nix/store/dkba63p5z5af8qiq9kgjaml6nswiqp2p-system-path
+$ tree -L 1 /nix/store/dkba63p5z5af8qiq9kgjaml6nswiqp2p-system-path
+/run/current-system/sw/
+├── bin
+├── etc
+├── info
+├── lib
+├── sbin
+└── share
 $ ls -l /nix/store/dkba63p5z5af8qiq9kgjaml6nswiqp2p-system-path/bin
-razem 4980
-lrwxrwxrwx 1 root root 64 1970-01-01  '[' -> '/nix/store/95wmyhk0y60r09b98l6v4vswv5m7xm4q-coreutils-8.25/bin/['
-lrwxrwxrwx 1 root root 66 1970-01-01  2to3 -> /nix/store/awbf3jh262m1k16hxgbgngdmxv66gd79-python-2.7.11/bin/2to3
-lrwxrwxrwx 1 root root 61 1970-01-01  7z -> /nix/store/ynvzkiqy3j17aln8rwpv2bjw64108yci-p7zip-9.38/bin/7z
-lrwxrwxrwx 1 root root 62 1970-01-01  7za -> /nix/store/ynvzkiqy3j17aln8rwpv2bjw64108yci-p7zip-9.38/bin/7za
-lrwxrwxrwx 1 root root 62 1970-01-01  7zr -> /nix/store/ynvzkiqy3j17aln8rwpv2bjw64108yci-p7zip-9.38/bin/7zr
+'[' -> '/nix/store/95wmyhk0y60r09b98l6v4vswv5m7xm4q-coreutils-8.25/bin/['
+2to3 -> /nix/store/awbf3jh262m1k16hxgbgngdmxv66gd79-python-2.7.11/bin/2to3
+7z -> /nix/store/ynvzkiqy3j17aln8rwpv2bjw64108yci-p7zip-9.38/bin/7z
+7za -> /nix/store/ynvzkiqy3j17aln8rwpv2bjw64108yci-p7zip-9.38/bin/7za
+7zr -> /nix/store/ynvzkiqy3j17aln8rwpv2bjw64108yci-p7zip-9.38/bin/7zr
 						</pre>
 						We just gained atomic deployments by updating a symlink.
 						<aside class="notes">
@@ -190,33 +189,30 @@ lrwxrwxrwx 1 root root 62 1970-01-01  7zr -> /nix/store/ynvzkiqy3j17aln8rwpv2bjw
 					<section>
 						<h2 class="slide-heading">Profile</h2>
 						<h3>User profile</h3>
-						<pre>
+						<pre style="font-size:0.50em">
 $ echo $PATH | tr : '\n'
 /home/shd/.nix-profile/bin
 /home/shd/.nix-profile/sbin
 /home/shd/.nix-profile/lib/kde4/libexec
 $ ls -l /home/shd/.nix-profile
-lrwxrwxrwx 1 shd users 29 03-11 03:11 /home/shd/.nix-profile -> /nix/var/nix/profiles/default
-ls -l /nix/var/nix/profiles/default
-lrwxrwxrwx 1 root root 15 06-03 14:12 /nix/var/nix/profiles/default -> default-71-link
-ls -l /nix/var/nix/profiles/default-71-link
-lrwxrwxrwx 1 root root 60 06-03 14:12 /nix/var/nix/profiles/default-71-link -> /nix/store/54filhqgcmzhdg0a1b5ic7pbv70a19p5-user-environment
-$ ls -l /home/shd/.nix-profile/
-razem 20
-dr-xr-xr-x 2 root root 4096 1970-01-01  bin
-lrwxrwxrwx 1 root root   64 1970-01-01  libexec -> /nix/store/z1bmidg3mzi2y1krxhfxxz1mvxlz205y-gnupg-2.1.12/libexec
-lrwxrwxrwx 1 root root   60 1970-01-01  manifest.nix -> /nix/store/0zy4iiva47pkbq7by3b3jiwljh02i32j-env-manifest.nix
-lrwxrwxrwx 1 root root   61 1970-01-01  sbin -> /nix/store/z1bmidg3mzi2y1krxhfxxz1mvxlz205y-gnupg-2.1.12/sbin
-dr-xr-xr-x 5 root root 4096 1970-01-01  share
-$ ls -l /home/shd/.nix-profile/bin
-razem 72
-lrwxrwxrwx 1 root root 73 1970-01-01  addgnupghome -> /nix/store/z1bmidg3mzi2y1krxhfxxz1mvxlz205y-gnupg-2.1.12/bin/addgnupghome
-lrwxrwxrwx 1 root root 79 1970-01-01  applygnupgdefaults -> /nix/store/z1bmidg3mzi2y1krxhfxxz1mvxlz205y-gnupg-2.1.12/bin/applygnupgdefaults
-lrwxrwxrwx 1 root root 68 1970-01-01  dirmngr -> /nix/store/z1bmidg3mzi2y1krxhfxxz1mvxlz205y-gnupg-2.1.12/bin/dirmngr
-lrwxrwxrwx 1 root root 75 1970-01-01  dirmngr-client -> /nix/store/z1bmidg3mzi2y1krxhfxxz1mvxlz205y-gnupg-2.1.12/bin/dirmngr-client
+/home/shd/.nix-profile -> /nix/var/nix/profiles/default
+$ ls -l /nix/var/nix/profiles/default
+/nix/var/nix/profiles/default -> default-71-link
+$ ls -l /nix/var/nix/profiles/default-71-link
+/nix/var/nix/profiles/default-71-link -> /nix/store/54filhqgcmzhdg0a1b5ic7pbv70a19p5-user-environment
+$ tree -L 1 /nix/store/k16kc171xwbanfc72yn9pamygzada7h6-user-environment
+├── bin
+├── include
+├── lib
+├── libexec -> /nix/store/smjxvqdr0ndzkrbyxq157cl6z3267wf6-strategoxt-1.8pre24429/libexec
+├── manifest.nix -> /nix/store/q648pxahaadfpkadpmcbasy97sv7czr8-env-manifest.nix
+└── share
+$ tree -L 1 /nix/store/k16kc171xwbanfc72yn9pamygzada7h6-user-environment/bin
+├── 2to3 -> /nix/store/d945ibfx9x185xf04b890y4f9g3cbb63-python-2.7.11/bin/2to3
+├── abox2html -> /nix/store/smjxvqdr0ndzkrbyxq157cl6z3267wf6-strategoxt-1.8pre24429/bin/abox2html
 						</pre>
-						Different users can use different sets of packages ( in different versions ).
-						But what about libraries?
+						<div style="font-size:0.8em">Different users can use different sets of packages ( in different versions ).</div>
+						<div style="font-size:0.8em" class="fragment" data-fragment-index="1">But what about libraries?</div>
 						<aside class="notes">
 							That's an example of per-user profile in Nix.
 							NixOS profiles are also versioned, /run/current-system/sw is configured during system bootstrap. Normally you have multiple kernel / init / profile versions as different bootloader entries.
@@ -270,6 +266,7 @@ $ ldd `which vim`
 					* hash known before actual build process, thus parallel builds / binary caches available
 					* packages are tested in chroot environments to make sure there are no dependency leaks
 					* no bit-identical output yet, thus you still need to trust your binary provider ( i.e. no DHT-based binary stores )
+					* timestamps being set to beginning of unix epoch
 					<aside class="notes">
 						As you probably noticed, packages in nix-store are prefixed with hash.
 					</aside>
@@ -338,7 +335,7 @@ $ cat /nix/store/5cbwmyl60sa4sxq5k7f67hkqh70yd4yl-env-manifest.nix
 nix-repl> 1+1
 2
 						</pre></code>
-						Purely functional language suited for configuration
+						Lazy, pure functional language suited for configuration
 					</section>
 					<section>
 						<h2 class="slide-heading">Nix Language</h2>
@@ -354,7 +351,7 @@ nix-repl> person.surname
 "smith"
 						</pre></code>
 						<ul>
-							<li>{} defines a hashmap</li>
+							<li>{} defines a set</li>
 							<li>// is an overriding operator</li>
 						</ul>
 						<aside class="notes">
@@ -428,7 +425,7 @@ nix-repl> builtins.currentSystem
 "x86_64-linux"
 						</pre></code>
 						<pre><code data-trim data-noescape>
-nix-repl> :l <nixpkgs>
+nix-repl> :l &lt;nixpkgs&gt;
 Added 6400 variables.
 
 nix-repl> :b derivation {
@@ -572,7 +569,7 @@ packageOverrides = pkgs: with pkgs; rec {
 };
 						</pre></code>
 						<div>Or in your ~/.nixpkgs/config.nix</div>
-						<div>As long as package and its parameters will be in remote cache you wont need a recompilation.</div>
+						<div class="fragment" data-fragment-index="1">As long as package and its parameters will be in remote cache you wont need a recompilation.</div>
 						<aside class="notes">
 						</aside>
 					</section>
@@ -610,6 +607,7 @@ $ nix-store -q --tree ~/.nix-profile
 |   |   +---/nix/store/idm1067y9i6m87crjqrbamdsq2ma5r7p-bash-4.3-p42 [...]
 					</pre></code>
 					<aside class="notes">
+						Complete list of directories needed to run given package
 					</aside>
 				</section>
 
@@ -757,9 +755,9 @@ rec {
 				</section>
 
 				<section>
-					<h2 class="slide-heading">Questions?</h2>
+					<h2 class="slide-heading">Thank you</h2>
 					<img class="plain" src="images/logo.png" style="width:300px">
-					<h3>Mariusz Gliwiński &lt;shd@nawia.net&gt;</h3>
+					<h3 style="padding-top:20px">Mariusz Gliwiński &lt;shd@nawia.net&gt;</h3>
 				</section>
 
 		</section>
